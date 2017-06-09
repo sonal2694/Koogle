@@ -42,7 +42,7 @@ def send():
 				Image = labels.find_one({"LabelName": k})
 				if Image is not None:
 					url = images.find_one({"ImageID": Image['ImageID']})
-					out.write(url['Thumbnail300KURL'] + '\n' )
+					out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + '\n' )
 	out.close()
 
 	arr = []
@@ -53,6 +53,7 @@ def send():
 	f = open(filename, 'r')
 	for line in f:
 		imageUrl = line.rstrip("\n")
+        # print(imageUrl)
 		arr[c] = imageUrl
 		c = c+1
 		#arr.append(imageUrl)
