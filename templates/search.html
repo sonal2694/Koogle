@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet"> 
+</head>
+<body>
+<style type="text/css">
+	.centerText
+	{
+		font-size: 100px;
+		position: absolute;
+		top: 20%;
+		left: 34.5%;
+
+	}
+	span
+	{
+		padding-right: 10px;
+	}
+	.k
+	{
+		color: #2E0927;
+	}
+	.o1
+	{
+		color: #D90000;
+	}
+	.o2
+	{
+		color: #FF8C00;
+	}
+	.g
+	{
+		color: #2E0927;
+	}
+	.l
+	{
+		color: #FF2D00;
+	}
+	.e
+	{
+		color: #04756F;
+	}
+	.centerBox
+	{
+		position: absolute;
+		top: 45%;
+		left: 28%;
+		width: 40%;
+
+	}
+	.textbox
+	{
+		border: 2px solid #3CBC8D;
+		color: #333;
+		padding: 16px 10px;
+		margin-bottom: 10%;
+		width: 100%;
+	}
+	.btn
+	{
+		background-color: #3CBC8D;
+		border: 2px solid #3CBC8D;
+	    color: white;
+	    padding: 10px 32px;
+	    text-decoration: none;
+	    margin: 4px 2px;
+	    cursor: pointer;
+	    margin-left: 40%;
+	}
+	.btn:hover
+	{
+		background-color: #BDBDBD;
+		color: black;
+		border: 2px solid #BDBDBD;
+	}
+	.centerQuote
+	{
+		position: absolute;
+		font-style: italic;
+		font-size: 14px;
+		bottom: 2%;
+		left: 34%;
+		color: #9e9e9e;
+	}
+	input[type=text]:focus {
+    border: 2px solid #1E9465;
+	}
+</style>
+<div class="centerText">
+	<span class="k">k</span><span class="o1">o</span><span class="o2">o</span><span class="g">g</span><span class="l">l</span><span class="e">e</span>
+</div>
+<div class="centerBox">
+	<form action="/send" method="POST">
+		<input class="textbox" type="text" name="query" placeholder="Search..">
+		<br>
+		<input class="btn" type="submit" name="search" value="Search">
+	</form>
+</div>
+<div class="centerQuote">The future is independent of the past given the present.</div>
+</body>
+</html>

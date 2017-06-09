@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<style type="text/css">
+	body{
+		margin: 0;
+		overflow-x: hidden;
+	}
+	.kdiv
+	{
+		position: absolute;
+		font-size: 50px;
+		padding: 20px 20px 40px 20px;
+		box-shadow: 0px 5px 5px 2px #D7D7D7;
+		width: 100vw;
+		background-color: #FAFAFA;
+	}
+	.imgdiv
+	{
+		top: 22%;
+		position: absolute;
+		/*padding-top: 50px;*/
+	}
+	.k
+	{
+		color: #2E0927;
+	}
+	.o1
+	{
+		color: #D90000;
+	}
+	.o2
+	{
+		color: #FF8C00;
+	}
+	.g
+	{
+		color: #2E0927;
+	}
+	.l
+	{
+		color: #FF2D00;
+	}
+	.e
+	{
+		color: #04756F;
+	}
+	input
+	{
+		display: inline;
+	}
+	.textbox
+	{
+		border: 2px solid #3CBC8D;
+		color: #333;
+		padding: 12px 8px;
+		position: relative;
+		top: -10px;
+		width: 50%
+	}
+	.btn
+	{
+		background-color: #3CBC8D;
+		border: none;
+	    color: white;
+	    padding: 10px 32px;
+	    text-decoration: none;
+	    cursor: pointer;
+	    position: relative;
+	    top: -10px;
+	}
+	.btn:hover
+	{
+		background-color: #BDBDBD;
+		color: black;
+		border: 2px solid #BDBDBD;
+	}
+	.search-form{
+		display: inline-block;
+		width: 70%;
+	}
+	.image
+	{
+		margin: 10px 10px 10px 10px;
+	}
+</style>
+<div class="kdiv">
+	<span class="k">k</span
+	><span class="o1">o</span
+	><span class="o2">o</span
+	><span class="g">g</span
+	><span class="l">l</span
+	><span class="e">e</span>
+	<span>
+		<form class='search-form' action="/send" method="POST">
+			<input class= "textbox" type="text" name="query" placeholder="Search.." value="{{text}}">
+			<input class="btn" type="submit" name="search" value="Search">
+		</form>
+	</span>
+
+</div>
+<div class="imgdiv">
+	{% for e in data %}
+	<img class= "image" src="{{data[e]}}" alt="{{data[e]}}" height="200" height="200">
+	{% endfor %}
+
+</body>
+</html>
