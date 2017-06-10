@@ -103,8 +103,8 @@
 
 </div>
 <div class="imgdiv">
-	{% for e in data %}
-	<img class= "image" src="{{data[e]}}" alt="{{data[e]}}" height="200" height="200">
+	{% for line in data %}
+		<img class= "image" src="{{line[0]}}" data-ImageID="{{line[1]}}" alt="Photo Unavailable" height="200" height="200">
 	{% endfor %}
 
 </body>

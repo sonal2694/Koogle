@@ -15,69 +15,52 @@ filename = 'data.txt'
 
 @app.route("/")
 def main():
-     return render_template('search.html')
+    return render_template('search.html')
 
 @app.route("/send", methods=['POST'])
 def send():
-	query = request.form['query']
-	print(query)
-	query = query.lower()
-	cachedStopwords = stopwords.words("english")
-	query = ' '.join([word for word in query.split() if word not in cachedStopwords])
-	q=query.split(" ")
-	client = MongoClient()
-	client = MongoClient('localhost', 27017)
+    query = request.form['query']
+    print(query)
+    query = query.lower()
+    cachedStopwords = stopwords.words("english")
+    query = ' '.join([word for word in query.split() if word not in cachedStopwords])
+    q=query.split(" ")
+    client = MongoClient()
+    client = MongoClient('localhost', 27017)
 
-	db = client.dataset
-	invertedIndex = db.InvertedIndex
-	labels = db.labels
-	images = db.images
-	out = open(filename, 'a')
-	out.truncate(0);
+    db = client.dataset
+    invertedIndex = db.InvertedIndex
+    labels = db.labels
+    images = db.images
+    out = open(filename, 'a')
+    out.truncate(0);
 
-	for i in q:
-		result = invertedIndex.find_one({"label": i})
-		if result:
-			for k in result['image']:
-				Image = labels.find_one({"LabelName": k})
-				if Image is not None:
-					url = images.find_one({"ImageID": Image['ImageID']})
-					out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + '\n' )
-	out.close()
+    for i in q:
+        result = invertedIndex.find_one({"label": i})
+        if result:
+            for k in result['image']:
+                Image = labels.find_one({"LabelName": k})
+                if Image is not None:
+                    url = images.find_one({"ImageID": Image['ImageID']})
+                    out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + '\n' )
 
-	arr = []
-	out.close()
+    out.close()
 
-	arr = {}
-	c = 0
-	f = open(filename, 'r')
-	for line in f:
-		imageUrl = line.rstrip("\n")
-        # print(imageUrl)
-		arr[c] = imageUrl
-		c = c+1
-		#arr.append(imageUrl)
+    arr = []
+    c = 0
+    f = open(filename, 'r')
 
-	# a= arr.values()
+    for line in f:
+        imageStuff = line.rstrip("\n")
+        imageParts = imageStuff.split(" ")
+        imageUrl = imageParts[0]
 
-	# print(a)
-	# counts = collections.Counter(a)
+        arr.append(imageParts)
 
-	# l= list(itertools.chain.from_iterable([[k for _ in range(counts[k])] for k in sorted(counts, key=counts.__getitem__, reverse=True)]))
-	# print(l)
 
-	# # s=[]
-	# # for i in l:
-	# # 	if i not in s:
-	# # 		s.append(i)
+        c = c+1
 
-	# arr={}
-	# c=0
-	# for x in l:
-	# 	arr[c]=x
-	# 	c=c+1
-
-	return render_template('result.html', text=request.form['query'], data=arr)
+    return render_template('result.html', text=request.form['query'], data=arr)
 
 if __name__ == "__main__":
     app.run()
