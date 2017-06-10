@@ -21,7 +21,7 @@
 			{
 				$(this).addClass('selected');
 				var imageID= $(this).data('imageid');
-				alert(imageID+ " "+ c);
+				// alert(imageID+ " Selected");
 			}
     	});
 	});
@@ -36,7 +36,9 @@
 	}
 	.selected
 	{
-		border: 5px solid #3CBC8D;
+		border: 2px solid #424242;
+		box-shadow: 0 0 5px 4px #424242;
+    	transition: border 0.2s, box-shadow 0.2s;
 	}
 	.kdiv
 	{
