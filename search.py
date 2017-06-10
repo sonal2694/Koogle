@@ -56,7 +56,8 @@ def send():
         imageUrl = imageParts[0]
 
         arr.append(imageParts)
-
+        arr.sort()
+        arr = list(arr for arr,_ in itertools.groupby(arr))
 
         c = c+1
 
