@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from collections import Counter
 from itertools import repeat, chain
 import collections
+import json
 import itertools
 import pprint
 import os
@@ -20,7 +21,6 @@ def main():
 @app.route("/send", methods=['POST'])
 def send():
     query = request.form['query']
-    print(query)
     query = query.lower()
     cachedStopwords = stopwords.words("english")
     query = ' '.join([word for word in query.split() if word not in cachedStopwords])
@@ -62,6 +62,33 @@ def send():
         c = c+1
 
     return render_template('result.html', text=request.form['query'], data=arr)
+
+@app.route('/add_keywords', methods=['POST'])
+def add_keywords():
+    imageID = request.json['imageID']
+    keywords = request.json['query_words']
+    tags = []
+    tags = keywords.split(" ")
+
+    client = MongoClient()
+    client = MongoClient('localhost', 27017)
+    db = client.dataset
+    associatedTags = db.associatedTags
+
+    #adding the keywords if an entry for the image already exists
+    result = associatedTags.find_one({"imageID": imageID})
+    if result:
+        for i in tags:
+            if i not in result['tags']:
+                temp_tags = result['tags']
+                temp_tags.append(i)
+                res = db.associatedTags.update_one({'imageID': imageID}, {'$set': {'tags':temp_tags}},)
+
+    #adding a new imageID and its keywords
+    else:
+        result = db.associatedTags.insert_one({"imageID": imageID, "tags": tags})
+
+    return ("Image ID is:"+imageID+" Tags: "+keywords)
 
 if __name__ == "__main__":
     app.run()

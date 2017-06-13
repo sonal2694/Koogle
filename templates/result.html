@@ -2,10 +2,11 @@
 <html>
 <head>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<!-- <script type=text/javascript src="{{url_for('static', filename='jquery.js') }}"></script> -->
 	
 	<script>
 	$(document).ready(function(){
-	     $("img").data('counter', 0).click(function(){
+		$("img").data('counter', 0).click(function(){
 			var counter = $(this).data('counter');
 			$(this).data('counter', counter + 1);
 			var c = $(this).data('counter');
@@ -20,7 +21,24 @@
 			else
 			{
 				$(this).addClass('selected');
-				var imageID= $(this).data('imageid');
+				var imageid = $(this).data('imageid');
+				var query_words = $("#query_words").val();
+				
+				$.ajax({
+					url: '{{url_for('add_keywords')}}',
+					data: JSON.stringify({"imageID": imageid, "query_words": query_words}),
+					contentType: 'application/json;charset=UTF-8',
+					datatype: "json",
+					type: 'POST',
+					success:function(response)
+					{
+						console.log(response);
+					},
+					error: function(error)
+					{
+						console.log(error);
+					}
+				});
 				// alert(imageID+ " Selected");
 			}
     	});
@@ -129,7 +147,7 @@
 	><span class="e">e</span>
 	<span>
 		<form class='search-form' action="/send" method="POST">
-			<input class= "textbox" type="text" name="query" placeholder="Search.." value="{{text}}">
+			<input class= "textbox" type="text" id="query_words" name="query" placeholder="Search.." value="{{text}}">
 			<input class="btn" type="submit" name="search" value="Search">
 		</form>
 	</span>
