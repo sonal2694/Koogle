@@ -17,6 +17,24 @@
 				{
 					$(this).removeClass('selected');
 				}
+				var imageid = $(this).data('imageid');
+				var query_words = $("#query_words").val();
+				
+				$.ajax({
+					url: '{{url_for('remove_keywords')}}',
+					data: JSON.stringify({"imageID": imageid, "query_words": query_words}),
+					contentType: 'application/json;charset=UTF-8',
+					datatype: "json",
+					type: 'POST',
+					success:function(response)
+					{
+						console.log(response);
+					},
+					error: function(error)
+					{
+						console.log(error);
+					}
+				});
 			}
 			else
 			{

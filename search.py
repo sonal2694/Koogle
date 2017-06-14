@@ -90,5 +90,28 @@ def add_keywords():
 
     return ("Image ID is:"+imageID+" Tags: "+keywords)
 
+@app.route('/remove_keywords', methods=['POST'])
+def remove_keywords():
+    imageID = request.json['imageID']
+    keywords = request.json['query_words']
+    tags = []
+    tags = keywords.split(" ")
+
+    client = MongoClient()
+    client = MongoClient('localhost', 27017)
+    db = client.dataset
+    associatedTags = db.associatedTags
+
+    result = associatedTags.find_one({"imageID": imageID})
+    if result:
+        for i in tags:
+            if i in result['tags']:
+                temp_tags = result['tags']
+                temp_tags.remove(i)
+                res = db.associatedTags.update_one({'imageID': imageID}, {'$set': {'tags':temp_tags}},)
+
+    return ("Removed Image ID is:"+imageID+" Tags: "+keywords)
+
+
 if __name__ == "__main__":
     app.run()
