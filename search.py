@@ -35,6 +35,7 @@ def send():
     out = open(filename, 'a')
     out.truncate(0);
 
+    loadedImages = []
     for i in q:
         result = invertedIndex.find_one({"label": i})
         if result:
@@ -42,9 +43,12 @@ def send():
                 Image = labels.find_one({"LabelName": k})
                 if Image is not None:
                     url = images.find_one({"ImageID": Image['ImageID']})
-                    out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + '\n' )
+                    if url not in loadedImages:
+                        loadedImages.append(url)
+                        out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + " " + k + '\n' )
 
     out.close()
+    print(loadedImages)
 
     arr = []
     c = 0
@@ -54,12 +58,7 @@ def send():
         imageStuff = line.rstrip("\n")
         imageParts = imageStuff.split(" ")
         imageUrl = imageParts[0]
-
         arr.append(imageParts)
-        arr.sort()
-        arr = list(arr for arr,_ in itertools.groupby(arr))
-
-        c = c+1
 
     return render_template('result.html', text=request.form['query'], data=arr)
 
