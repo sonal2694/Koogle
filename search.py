@@ -48,7 +48,6 @@ def send():
                         out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + " " + k + '\n' )
 
     out.close()
-    print(loadedImages)
 
     arr = []
     c = 0
@@ -66,26 +65,79 @@ def send():
 def add_keywords():
     imageID = request.json['imageID']
     keywords = request.json['query_words']
-    tags = []
-    tags = keywords.split(" ")
+    query = []
+    query = keywords.split(" ")
 
     client = MongoClient()
     client = MongoClient('localhost', 27017)
     db = client.dataset
-    associatedTags = db.associatedTags
+    markovChain = db.markovChain
 
-    #adding the keywords if an entry for the image already exists
-    result = associatedTags.find_one({"imageID": imageID})
+    imageAnnotations = db.imageAnnotations
+    result = imageAnnotations.find_one({"imageID": imageID})
     if result:
-        for i in tags:
-            if i not in result['tags']:
-                temp_tags = result['tags']
-                temp_tags.append(i)
-                res = db.associatedTags.update_one({'imageID': imageID}, {'$set': {'tags':temp_tags}},)
+        annotations = result['annotations']
+        for i in query:
+            if i in annotations:
+                annotations.remove(i)
 
-    #adding a new imageID and its keywords
-    else:
-        result = db.associatedTags.insert_one({"imageID": imageID, "tags": tags})
+        res1 = markovChain.find_one({"fromState": query, "toState": annotations})
+        if res1:
+            old_prob = res1['prob']
+            M = res1['M']
+            new_prob1 = ((M*old_prob)+1)/(M+1)
+            markovChain.update(
+            {
+                "fromState": query,
+                "toState": annotations
+            },
+            {
+                '$set': {"prob": new_prob1, "M": M+1}
+            })
+
+        else:
+            res2 = markovChain.find_one({"fromState": query})
+            if res2:
+                M = res2['M']
+            else:
+                M = 0
+            new_prob1 = 1/(M+1)
+            markovChain.insert_one(
+                {
+                    "fromState": query,
+                    "toState": annotations,
+                    "prob": new_prob1,
+                    "M": M+1
+                })
+
+        cursor = markovChain.find({"fromState": query, "toState": { '$ne': annotations }})
+        for document in cursor:
+            toState = document['toState'] 
+            old_prob = document['prob']
+            new_prob2 = ((M*old_prob))/(M+1)
+            markovChain.update(
+            {
+                "fromState": query,
+                "toState": toState
+            },
+            {
+                '$set': {"prob": new_prob2, "M": M+1}
+            })
+
+    # associatedTags = db.associatedTags
+
+    # #adding the keywords if an entry for the image already exists
+    # result = associatedTags.find_one({"imageID": imageID})
+    # if result:
+    #     for i in tags:
+    #         if i not in result['tags']:
+    #             temp_tags = result['tags']
+    #             temp_tags.append(i)
+    #             res = db.associatedTags.update_one({'imageID': imageID}, {'$set': {'tags':temp_tags}},)
+
+    # #adding a new imageID and its keywords
+    # else:
+    #     result = db.associatedTags.insert_one({"imageID": imageID, "tags": tags})
 
     return ("Image ID is:"+imageID+" Tags: "+keywords)
 
