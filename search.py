@@ -4,6 +4,7 @@ from flask import Flask, request, render_template
 from pymongo import MongoClient
 from collections import Counter
 from itertools import repeat, chain
+from itertools import chain, combinations
 import collections
 import json
 import itertools
@@ -13,6 +14,10 @@ import os
 #from nltk.stem.wordnet import WordNetLemmatizer
 app = Flask(__name__)
 filename = 'data.txt'
+client = MongoClient()
+client = MongoClient('localhost', 27017)
+db = client.dataset
+images_all =[] #total images displayed
 
 @app.route("/")
 def main():
@@ -25,41 +30,93 @@ def send():
     cachedStopwords = stopwords.words("english")
     query = ' '.join([word for word in query.split() if word not in cachedStopwords])
     q=query.split(" ")
+
     client = MongoClient()
     client = MongoClient('localhost', 27017)
-
     db = client.dataset
     invertedIndex = db.InvertedIndex
     labels = db.labels
     images = db.images
+
+    del images_all[:] #empties the list before use
+    subsets = list(powerset(q))
+    subsets.reverse()
+    for s in subsets:
+        s = list(s)
+        #retrieving pictures that contain the two words
+        retrieve_images(s)
+        #Retrieving semantically similar pictures
+        markovian_keywords = get_markov_keywords(s) #add None condition
+        if markovian_keywords:
+            for i in markovian_keywords:
+                retrieve_images(i)
+    print (len(images_all))
     out = open(filename, 'a')
     out.truncate(0);
 
-    loadedImages = []
-    for i in q:
-        result = invertedIndex.find_one({"label": i})
-        if result:
-            for k in result['image']:
-                Image = labels.find_one({"LabelName": k})
-                if Image is not None:
-                    url = images.find_one({"ImageID": Image['ImageID']})
-                    if url not in loadedImages:
-                        loadedImages.append(url)
-                        out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + " " + k + '\n' )
+    for i in images_all:
+        res = images.find_one({"ImageID": i})
+        out.write(res['Thumbnail300KURL'] + " " + i + '\n' )
+
+    # loadedImages = []
+    # for i in q:
+    #     result = invertedIndex.find_one({"label": i})
+    #     if result:
+    #         for k in result['image']:
+    #             Image = labels.find_one({"LabelName": k})
+    #             if Image is not None:
+    #                 url = images.find_one({"ImageID": Image['ImageID']})
+    #                 if url not in loadedImages:
+    #                     loadedImages.append(url)
+    #                     out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + " " + k + '\n' )
 
     out.close()
 
     arr = []
-    c = 0
     f = open(filename, 'r')
 
     for line in f:
         imageStuff = line.rstrip("\n")
         imageParts = imageStuff.split(" ")
-        imageUrl = imageParts[0]
         arr.append(imageParts)
 
     return render_template('result.html', text=request.form['query'], data=arr)
+
+@app.route('/powerset/<iterable>')
+def powerset(iterable):
+    q = list(iterable)
+    return chain.from_iterable(combinations(q,r) for r in range(1, len(q)+1))
+
+@app.route('/retrieve_images/<s>')
+def retrieve_images(s):
+    count = 0
+    imageAnnotations = db.imageAnnotations
+    cursor_one = imageAnnotations.find({"annotations": {'$all': s}})
+    # cursor_one = imageAnnotations.find({"annotations": s})
+    for document in cursor_one:
+        #to limit the number of images we get everytime
+        if (count < 40):
+            imageID = document['imageID']
+            if (imageID not in images_all):
+                images_all.append(imageID)
+                count = count + 1
+
+@app.route('/get_markov_keywords/<s>')
+def get_markov_keywords(s):
+    markovChain = db.markovChain
+    semantic_keywords = []
+    res = markovChain.find_one({"fromState": s})
+    if res:
+        #finding maximum probability
+        max_prob_res = markovChain.find({"fromState": s}).sort("prob",-1)
+        for doc in max_prob_res:
+            prob = doc['prob']
+            toState = doc['toState']
+            semantic_keywords.append(toState)
+        return semantic_keywords
+        # for document in cursor_two:
+    else:
+        return None
 
 @app.route('/add_keywords', methods=['POST'])
 def add_keywords():
