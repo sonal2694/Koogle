@@ -44,7 +44,7 @@ $ python3 createImageAnnotations.py
 $ python3 removeDupAnnotations.py
 ```
 
-Come out of the script folder and run the main file search.py by typing:
+Come out of the script folder and run the main file, search.py, by typing:
 
 ```
 $ python3 search.py
@@ -52,14 +52,14 @@ $ python3 search.py
 
 The search engine runs on http://127.0.0.1:5000/.
 
-### Test 1
+### Input
 
 Type your query in the search box and click on SEARCH. For example,
 
 ```
 traditional sport
 ```
-You get directed to another page where you can select your desired images.
+You get directed to another page with the results where you can select your desired images.
 
 ## Built With
 
