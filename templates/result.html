@@ -2,15 +2,16 @@
 <html>
 <head>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<!-- <script type=text/javascript src="{{url_for('static', filename='jquery.js') }}"></script> -->
 	
 	<script>
 	$(document).ready(function(){
-		$("img").data('counter', 0).click(function(){
+	    $("img").data('counter', 0).click(function(){
 			var counter = $(this).data('counter');
 			$(this).data('counter', counter + 1);
 			var c = $(this).data('counter');
 
+			// When user deselects a picture.
+			
 			if($(this).data('counter')%2 == 0)
 			{
 				if($(this).hasClass("selected"))
@@ -36,6 +37,9 @@
 					}
 				});
 			}
+
+			// When user selects an image.
+
 			else
 			{
 				$(this).addClass('selected');
@@ -57,12 +61,11 @@
 						console.log(error);
 					}
 				});
-				// alert(imageID+ " Selected");
 			}
     	});
 	});
 	</script>
-
+	
 	<title></title>
 </head>
 
@@ -76,7 +79,7 @@
 	{
 		border: 2px solid #1565c0;
 		box-shadow: 0 0 5px 6px #1565c0;
-    	transition: border 0.2s, box-shadow 0.2s;
+		transition: border 0.2s, box-shadow 0.2s;
 	}
 	.kdiv
 	{
@@ -91,7 +94,6 @@
 	{
 		top: 22%;
 		position: absolute;
-		/*padding-top: 50px;*/
 	}
 	.k
 	{
@@ -156,6 +158,9 @@
 		margin: 10px 10px 10px 10px;
 	}
 </style>
+
+<!-- Div to contain the name of the search engine, textbox and submit button -->
+
 <div class="kdiv">
 	<span class="k">k</span
 	><span class="o1">o</span
@@ -171,7 +176,11 @@
 	</span>
 
 </div>
+
+<!-- Div to display retrieved images -->
+
 <div class="imgdiv">
+	<!-- Data is the array of images sent to the front-end -->
 	{% for line in data %}
 		<img class= "image" src="{{line[0]}}" data-ImageID="{{line[1]}}" alt="Photo Unavailable" height="200">
 	{% endfor %}
