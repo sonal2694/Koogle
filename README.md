@@ -15,7 +15,7 @@ $ sudo apt-get install python3
 $ sudo apt-get install -y python3-pip
 ```
 
-Install the python packages pymongo and nltk. You can install Python packages by typing:
+Install the python packages pymongo and nltk. You can install Python packages using:
 
 ```
 $ pip3 install package_name
