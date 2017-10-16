@@ -1,4 +1,7 @@
-# Working program
+# The code below forms the back-end of the application
+
+# packages imported in python
+
 from nltk.corpus import stopwords
 from flask import Flask, request, render_template
 from pymongo import MongoClient
@@ -10,18 +13,30 @@ import json
 import itertools
 import pprint
 import os
-#from nltk.stem.porter import PorterStemmer
-#from nltk.stem.wordnet import WordNetLemmatizer
+
+#  Flask uses the import name to know where to look up resources,
+# templates, static files, instance folder. "__name__" is just a 
+# convenient way to get the import name of the place the app is
+# defined.
+
 app = Flask(__name__)
 filename = 'data.txt'
+
+# Connecting to MongoDB
+
 client = MongoClient()
 client = MongoClient('localhost', 27017)
 db = client.dataset
-images_all =[] #total images displayed
+images_all =[]
+
+# @app.route is a decorator used to match URLs to view functions in Flask apps.
 
 @app.route("/")
 def main():
     return render_template('search.html')
+
+# Function where queries are received and images pertaining to it are
+# retrived and ranked using the algorithm Koogle.
 
 @app.route("/send", methods=['POST'])
 def send():
@@ -31,50 +46,35 @@ def send():
     query = ' '.join([word for word in query.split() if word not in cachedStopwords])
     q=query.split(" ")
 
-    client = MongoClient()
-    client = MongoClient('localhost', 27017)
-    db = client.dataset
     invertedIndex = db.InvertedIndex
     labels = db.labels
     images = db.images
 
-    del images_all[:] #empties the list before use
+    del images_all[:]
     subsets = list(powerset(q))
     subsets.reverse()
     for s in subsets:
         s = list(s)
-        #retrieving pictures that contain the two words
         retrieve_images(s)
-        #Retrieving semantically similar pictures
-        markovian_keywords = get_markov_keywords(s) #add None condition
+        markovian_keywords = get_markov_keywords(s)
         if markovian_keywords:
             for i in markovian_keywords:
                 retrieve_images(i)
-    print (len(images_all))
+
+    # getting the URLs of all the images retrieved in a .txt file
+
     out = open(filename, 'a')
     out.truncate(0);
-
     for i in images_all:
         res = images.find_one({"ImageID": i})
         out.write(res['Thumbnail300KURL'] + " " + i + '\n' )
-
-    # loadedImages = []
-    # for i in q:
-    #     result = invertedIndex.find_one({"label": i})
-    #     if result:
-    #         for k in result['image']:
-    #             Image = labels.find_one({"LabelName": k})
-    #             if Image is not None:
-    #                 url = images.find_one({"ImageID": Image['ImageID']})
-    #                 if url not in loadedImages:
-    #                     loadedImages.append(url)
-    #                     out.write(url['Thumbnail300KURL'] + " " + Image['ImageID'] + " " + k + '\n' )
-
     out.close()
+
+    # Storing all the details of the retrieved images in an array that is
+    # then sent to the front-end "result.html" via flask.
 
     arr = []
     f = open(filename, 'r')
-
     for line in f:
         imageStuff = line.rstrip("\n")
         imageParts = imageStuff.split(" ")
@@ -82,17 +82,21 @@ def send():
 
     return render_template('result.html', text=request.form['query'], data=arr)
 
+
+# Finding the subsets of a list of keywords in the ascending order
+
 @app.route('/powerset/<iterable>')
 def powerset(iterable):
     q = list(iterable)
     return chain.from_iterable(combinations(q,r) for r in range(1, len(q)+1))
+
+# Retrieving pictures from the database
 
 @app.route('/retrieve_images/<s>')
 def retrieve_images(s):
     count = 0
     imageAnnotations = db.imageAnnotations
     cursor_one = imageAnnotations.find({"annotations": {'$all': s}})
-    # cursor_one = imageAnnotations.find({"annotations": s})
     for document in cursor_one:
         #to limit the number of images we get everytime
         if (count < 40):
@@ -101,22 +105,26 @@ def retrieve_images(s):
                 images_all.append(imageID)
                 count = count + 1
 
+# Finding the semantically similar keywords of a subset using the
+# markov chain
+
 @app.route('/get_markov_keywords/<s>')
 def get_markov_keywords(s):
     markovChain = db.markovChain
     semantic_keywords = []
     res = markovChain.find_one({"fromState": s})
     if res:
-        #finding maximum probability
+        #finding probabilities in decresing order
         max_prob_res = markovChain.find({"fromState": s}).sort("prob",-1)
         for doc in max_prob_res:
             prob = doc['prob']
             toState = doc['toState']
             semantic_keywords.append(toState)
         return semantic_keywords
-        # for document in cursor_two:
     else:
         return None
+
+# Function called when user selects an image; Updation of Markov chain.
 
 @app.route('/add_keywords', methods=['POST'])
 def add_keywords():
@@ -181,22 +189,9 @@ def add_keywords():
                 '$set': {"prob": new_prob2, "M": M+1}
             })
 
-    # associatedTags = db.associatedTags
-
-    # #adding the keywords if an entry for the image already exists
-    # result = associatedTags.find_one({"imageID": imageID})
-    # if result:
-    #     for i in tags:
-    #         if i not in result['tags']:
-    #             temp_tags = result['tags']
-    #             temp_tags.append(i)
-    #             res = db.associatedTags.update_one({'imageID': imageID}, {'$set': {'tags':temp_tags}},)
-
-    # #adding a new imageID and its keywords
-    # else:
-    #     result = db.associatedTags.insert_one({"imageID": imageID, "tags": tags})
-
     return ("Image ID is:"+imageID+" Tags: "+keywords)
+
+# Function called when user deselects an image
 
 @app.route('/remove_keywords', methods=['POST'])
 def remove_keywords():
