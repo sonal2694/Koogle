@@ -69,5 +69,5 @@ You get directed to another page with the results where you can select your desi
 
 ## Authors
 
-* **Sonal Singh** - [Sonal](https://github.com/sonal2694)
-* **Yash Choukse** - [Yash](https://github.com/yash1195)
+* [Sonal Singh](https://github.com/sonal2694)
+* [Yash Choukse](https://github.com/yash1195)
