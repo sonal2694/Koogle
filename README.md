@@ -7,7 +7,7 @@ The project will run only on a local system.
 
 ### Prerequisites
 
-Install Python 3 if the system does not already has it installed. To manage software packages for Python, install pip.
+Install Python 3 if not already installed. To manage software packages for Python, install pip.
 
 ```
 $ sudo apt-get update
